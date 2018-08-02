@@ -242,8 +242,9 @@ public class JKindApi extends KindApi {
 	}
 
 	protected String[] getJKindCommand() {
-		// TODO: not using -jkind if using all ivc jkind
-		return new String[] { ApiUtil.getJavaPath(), "-jar", getOrFindJKindJar() };
+		// TODO: not using -jkind if using mivc_jkind.jar
+		// using -jkind when using jkind.jar (no matter it's built from mivc or single ivc jar)
+		return new String[] { ApiUtil.getJavaPath(), "-jar", getOrFindJKindJar(), "-jkind" };
 	}
 
 	private String getOrFindJKindJar() {

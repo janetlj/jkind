@@ -2,11 +2,11 @@ package jkind.api.examples;
 
 import java.io.File;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
+
 import jkind.api.JKindApi;
 import jkind.api.results.JKindResult;
 import jkind.api.results.PropertyResult;
-
-import org.eclipse.core.runtime.NullProgressMonitor;
 
 /**
  * This example illustrates how to call the JKind API and process the results
@@ -41,7 +41,14 @@ public class CommandLineExample {
 		 * This triggers the actual execution of analysis. Options can be set on
 		 * the JKindApi object if desired.
 		 */
-		new JKindApi().execute(file, result, monitor);
+//		new JKindApi().execute(file, result, monitor);
+
+		JKindApi api = new JKindApi();
+		// api.setTimeout(10);
+		api.setAllIvcs();
+		api.setAllIvcsJkindTimeout(100);
+		api.setJKindJar("D:\\Janet\\usr_apps\\jkind-v4.0.1-mivc-new\\jkindjl\\jkind.jar");
+		api.execute(file, result, monitor);
 
 		/*
 		 * Process some of the results

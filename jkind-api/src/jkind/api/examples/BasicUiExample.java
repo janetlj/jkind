@@ -137,8 +137,9 @@ public class BasicUiExample {
 						JKindApi api = new JKindApi();
 						// api.setTimeout(10);
 						api.setAllIvcs();
-						api.setAllIvcsJkindTimeout(50);
-						api.setJKindJar("D:\\Janet\\usr_apps\\jkind-v4.0.1-mivc-new\\jkindjl\\jkind_mivc.jar");
+						api.setAllIvcsJkindTimeout(100);
+						// api.setJKindJar("D:\\Janet\\usr_apps\\jkind-v4.0.1-mivc-new\\jkindjl\\jkind_mivc.jar");
+						api.setJKindJar("D:\\Janet\\usr_apps\\jkind-v4.0.1-mivc-new\\jkindjl\\jkind.jar");
 						api.execute(file, result, monitor);
 					}
 				}.start();

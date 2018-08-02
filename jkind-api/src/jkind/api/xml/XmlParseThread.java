@@ -5,11 +5,18 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import jkind.JKindException;
 import jkind.api.Backend;
@@ -31,12 +38,6 @@ import jkind.results.Signal;
 import jkind.results.UnknownProperty;
 import jkind.results.ValidProperty;
 import jkind.util.Util;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
 public class XmlParseThread extends Thread {
 	private final InputStream xmlStream;
@@ -63,7 +64,7 @@ public class XmlParseThread extends Thread {
 		 * the XML file which causes the buffer to fill. Instead, we read the
 		 * XML file ourselves and give relevant pieces of it to the parser as
 		 * they are ready.
-		 * 
+		 *
 		 * The downside is we assume the <Property ...> and </Property> tags are
 		 * on their own lines.
 		 */
@@ -181,10 +182,23 @@ public class XmlParseThread extends Thread {
 		int k = getK(getElement(propertyElement, "K"));
 		String answer = getAnswer(getElement(propertyElement, "Answer"));
 		String source = getSource(getElement(propertyElement, "Answer"));
-		List<String> invariants = getStringList(getElements(propertyElement, "Invariant"));
-		List<String> ivc = getStringList(getElements(propertyElement, "Ivc"));
+		int numOfIVCs = getNumOfIVCs(getElement(propertyElement, "NumberOfIVCs"));
 		List<String> conflicts = getConflicts(getElement(propertyElement, "Conflicts"));
 		Counterexample cex = getCounterexample(getElement(propertyElement, "Counterexample"), k);
+		List<String> invariants = getStringList(getElements(propertyElement, "Invariant"));
+		List<String> ivc = getStringList(getElements(propertyElement, "Ivc"));
+		HashSet<List<String>> invarantSets = new HashSet<List<String>>();
+		HashSet<List<String>> ivcSets = new HashSet<List<String>>();
+
+		for (int i = 0; i < numOfIVCs; i++) {
+			Element ivcSetElem = (Element) propertyElement.getElementsByTagName("IvcSet").item(i);
+
+			List<String> curInvariants = getStringList(getElements(ivcSetElem, "Invariant"));
+			List<String> curIvc = getStringList(getElements(ivcSetElem, "Ivc"));
+			invarantSets.add(curInvariants);
+			ivcSets.add(curIvc);
+		}
+
 
 		switch (answer) {
 		case "valid":
@@ -232,6 +246,15 @@ public class XmlParseThread extends Thread {
 		default:
 			throw new IllegalArgumentException();
 		}
+	}
+
+	private int getNumOfIVCs(Node numOfIVCNode) {
+		if (numOfIVCNode == null) {
+			return 0;
+		}
+		int num = Integer.parseInt(numOfIVCNode.getTextContent());
+		return num;
+
 	}
 
 	private String getAnswer(Node answerNode) {
