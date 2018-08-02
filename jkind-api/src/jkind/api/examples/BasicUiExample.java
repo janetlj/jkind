@@ -9,21 +9,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jkind.api.JKindApi;
-import jkind.api.KindApi;
-import jkind.api.results.JKindResult;
-import jkind.api.results.PropertyResult;
-import jkind.api.results.Status;
-import jkind.api.ui.results.AnalysisResultTable;
-import jkind.results.Counterexample;
-import jkind.results.InvalidProperty;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -35,6 +24,14 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+
+import jkind.api.JKindApi;
+import jkind.api.results.JKindResult;
+import jkind.api.results.PropertyResult;
+import jkind.api.results.Status;
+import jkind.api.ui.results.AnalysisResultTable;
+import jkind.results.Counterexample;
+import jkind.results.InvalidProperty;
 
 /**
  * This example illustrates how to dynamically report the results of a JKind API
@@ -137,8 +134,11 @@ public class BasicUiExample {
 				new Thread("Analysis") {
 					@Override
 					public void run() {
-						KindApi api = new JKindApi();
-						api.setTimeout(10);
+						JKindApi api = new JKindApi();
+						// api.setTimeout(10);
+						api.setAllIvcs();
+						api.setAllIvcsJkindTimeout(50);
+						api.setJKindJar("D:\\Janet\\usr_apps\\jkind-v4.0.1-mivc-new\\jkindjl\\jkind_mivc.jar");
 						api.execute(file, result, monitor);
 					}
 				}.start();
@@ -153,14 +153,11 @@ public class BasicUiExample {
 			}
 		});
 
-		viewer.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				if (event.getSelection() instanceof IStructuredSelection) {
-					IStructuredSelection sel = (IStructuredSelection) event.getSelection();
-					if (!sel.isEmpty()) {
-						click(parent, (PropertyResult) sel.getFirstElement());
-					}
+		viewer.getViewer().addSelectionChangedListener(event -> {
+			if (event.getSelection() instanceof IStructuredSelection) {
+				IStructuredSelection sel = (IStructuredSelection) event.getSelection();
+				if (!sel.isEmpty()) {
+					click(parent, (PropertyResult) sel.getFirstElement());
 				}
 			}
 		});

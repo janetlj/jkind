@@ -11,16 +11,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+
 import jkind.JKindException;
 import jkind.api.results.JKindResult;
 import jkind.api.xml.JKindXmlFileInputStream;
 import jkind.api.xml.XmlParseThread;
 import jkind.util.Util;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-
 public class ApiUtil {
- 
+
 	public static File writeLustreFile(String program) {
 		return writeTempFile("jkind-api-", ".lus", program);
 	}
@@ -44,6 +44,7 @@ public class ApiUtil {
 		try {
 			xmlFile = getXmlFile(lustreFile);
 			debug.println("XML results file", xmlFile);
+			System.out.println("XML results file\n" + xmlFile);
 			ensureDeleted(xmlFile);
 			callJKind(runCommand, lustreFile, xmlFile, result, monitor, debug);
 		} catch (JKindException e) {
@@ -74,6 +75,7 @@ public class ApiUtil {
 			throws IOException, InterruptedException {
 		ProcessBuilder builder = runCommand.apply(lustreFile);
 		debug.println("JKind command: " + ApiUtil.getQuotedCommand(builder.command()));
+		System.out.println("JKind command: " + ApiUtil.getQuotedCommand(builder.command()));
 		Process process = null;
 		try (JKindXmlFileInputStream xmlStream = new JKindXmlFileInputStream(xmlFile)) {
 			XmlParseThread parseThread = new XmlParseThread(xmlStream, result, Backend.JKIND);
@@ -159,7 +161,7 @@ public class ApiUtil {
 		 * killed. The underlying JKind process would continue to its natural
 		 * end. To avoid this, we search the user's path for the jkind.jar file
 		 * and invoke it directly.
-		 * 
+		 *
 		 * In order to support JKIND_HOME or PATH as the location for JKind, we
 		 * now search in non-windows environments too.
 		 */
@@ -208,8 +210,13 @@ public class ApiUtil {
 	}
 
 	public static String getQuotedCommand(List<String> pieces) {
-		return pieces.stream().map(p -> p.contains(" ") ? "\"" + p + "\"" : p)
+		for (String piece : pieces) {
+			System.out.println("piece: " + piece);
+		}
+		String returnStr = pieces.stream().map(p -> p.contains(" ") ? "\"" + p + "\"" : p)
 				.collect(joining(" "));
+		System.out.println("returnStr: " + returnStr);
+		return returnStr;
 	}
 
 	public static void addEnvironment(ProcessBuilder builder, Map<String, String> environment) {
