@@ -190,16 +190,21 @@ public class XmlParseThread extends Thread {
 		HashSet<List<String>> invarantSets = new HashSet<List<String>>();
 		HashSet<List<String>> ivcSets = new HashSet<List<String>>();
 
-		for (int i = 0; i < numOfIVCs; i++) {
-			Element ivcSetElem = (Element) propertyElement.getElementsByTagName("IvcSet").item(i);
-
-			List<String> curInvariants = getStringList(getElements(ivcSetElem, "Invariant"));
-			List<String> curIvc = getStringList(getElements(ivcSetElem, "Ivc"));
+		if (numOfIVCs == 0) {
+			List<String> curInvariants = getStringList(getElements(propertyElement, "Invariant"));
+			List<String> curIvc = getStringList(getElements(propertyElement, "Ivc"));
 			invarantSets.add(curInvariants);
 			ivcSets.add(curIvc);
+		} else {
+			for (int i = 0; i < numOfIVCs; i++) {
+				Element ivcSetElem = (Element) propertyElement.getElementsByTagName("IvcSet").item(i);
+
+				List<String> curInvariants = getStringList(getElements(ivcSetElem, "Invariant"));
+				List<String> curIvc = getStringList(getElements(ivcSetElem, "Ivc"));
+				invarantSets.add(curInvariants);
+				ivcSets.add(curIvc);
+			}
 		}
-
-
 		switch (answer) {
 		case "valid":
 			return new ValidProperty(name, source, k, runtime, invariants, ivc);
