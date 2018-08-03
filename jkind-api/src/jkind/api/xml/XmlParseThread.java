@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -187,8 +188,8 @@ public class XmlParseThread extends Thread {
 		Counterexample cex = getCounterexample(getElement(propertyElement, "Counterexample"), k);
 		List<String> invariants = getStringList(getElements(propertyElement, "Invariant"));
 		List<String> ivc = getStringList(getElements(propertyElement, "Ivc"));
-		HashSet<List<String>> invarantSets = new HashSet<List<String>>();
-		HashSet<List<String>> ivcSets = new HashSet<List<String>>();
+		Set<List<String>> invarantSets = new HashSet<List<String>>();
+		Set<List<String>> ivcSets = new HashSet<List<String>>();
 
 		if (numOfIVCs == 0) {
 			List<String> curInvariants = getStringList(getElements(propertyElement, "Invariant"));
@@ -207,7 +208,7 @@ public class XmlParseThread extends Thread {
 		}
 		switch (answer) {
 		case "valid":
-			return new ValidProperty(name, source, k, runtime, invariants, ivc);
+			return new ValidProperty(name, source, k, runtime, invariants, ivc, invarantSets, ivcSets);
 
 		case "falsifiable":
 			return new InvalidProperty(name, source, cex, conflicts, runtime);

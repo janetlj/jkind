@@ -5,6 +5,8 @@ import static java.util.stream.Collectors.toList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 
 import jkind.JKindException;
@@ -20,7 +22,7 @@ import jkind.results.ValidProperty;
 
 /**
  * A class for renaming and removing variables from analysis results
- * 
+ *
  * @see MapRenaming
  */
 public abstract class Renaming {
@@ -28,7 +30,7 @@ public abstract class Renaming {
 	 * Returns the new name for a given name, or null if the original name
 	 * should be hidden. This method should always return the same result when
 	 * given the same input.
-	 * 
+	 *
 	 * @param original
 	 *            Original variable name
 	 * @return the new variable name or null if variable should be hidden
@@ -37,7 +39,7 @@ public abstract class Renaming {
 
 	/**
 	 * Rename property and signals (if present), possibly omitting some
-	 * 
+	 *
 	 * @param property
 	 *            Property to be renamed
 	 * @return Renamed version of the property, or <code>null</code> if there is
@@ -59,9 +61,9 @@ public abstract class Renaming {
 
 	/**
 	 * Rename valid property and signals (if present), possibly omitting some
-	 * 
+	 *
 	 * Note: Invariants (if present) will not be renamed
-	 * 
+	 *
 	 * @param property
 	 *            Property to be renamed
 	 * @return Renamed version of the property, or <code>null</code> if there is
@@ -74,12 +76,13 @@ public abstract class Renaming {
 		}
 
 		return new ValidProperty(name, property.getSource(), property.getK(), property.getRuntime(),
-				property.getInvariants(), rename(this::renameIVC, property.getIvc()));
+				property.getInvariants(), rename(this::renameIVC, property.getIvc()), property.getInvariantSets(),
+				rename(this::renameIVC, property.getIvcSets()));
 	}
 
 	/**
 	 * Rename invalid property and signals (if present), possibly omitting some
-	 * 
+	 *
 	 * @param property
 	 *            Property to be renamed
 	 * @return Renamed version of the property, or <code>null</code> if there is
@@ -97,7 +100,7 @@ public abstract class Renaming {
 
 	/**
 	 * Rename unknown property and signals (if present), possibly omitting some
-	 * 
+	 *
 	 * @param property
 	 *            Property to be renamed
 	 * @return Renamed version of the property, or <code>null</code> if there is
@@ -115,7 +118,7 @@ public abstract class Renaming {
 
 	/**
 	 * Rename inconsistent property
-	 * 
+	 *
 	 * @param property
 	 *            Property to be renamed
 	 * @return Renamed version of the property, or <code>null</code> if there is
@@ -133,7 +136,7 @@ public abstract class Renaming {
 
 	/**
 	 * Rename signals in a counterexample, possibly omitting some
-	 * 
+	 *
 	 * @param cex
 	 *            Counterexample to be renamed
 	 * @return Renamed version of the counterexample
@@ -155,9 +158,9 @@ public abstract class Renaming {
 
 	/**
 	 * Rename signal
-	 * 
+	 *
 	 * @param <T>
-	 * 
+	 *
 	 * @param signal
 	 *            The signal to be renamed
 	 * @return Renamed version of the signal or <code>null</code> if there is no
@@ -188,7 +191,7 @@ public abstract class Renaming {
 
 	/**
 	 * Rename a collection of elements, possibly omitting some
-	 * 
+	 *
 	 * @param es
 	 *            Strings to be renamed
 	 * @return Renamed version of the conflicts
@@ -197,9 +200,18 @@ public abstract class Renaming {
 		return es.stream().map(f).filter(e -> e != null).collect(toList());
 	}
 
+	private Set<List<String>> rename(Function<String, String> f, Set<List<String>> es) {
+		Set<List<String>> set = new TreeSet<List<String>>();
+		for(List<String> curOrigList: es) {
+			List<String> renamedList = curOrigList.stream().map(f).filter(e -> e != null).collect(toList());
+			set.add(renamedList);
+		}
+		return set;
+	}
+
 	/**
 	 * Rename an IVC variable
-	 * 
+	 *
 	 * @param ivc
 	 *            the string to be renamed
 	 * @return Renamed version of the ivc string

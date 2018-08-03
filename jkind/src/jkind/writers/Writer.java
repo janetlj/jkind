@@ -3,6 +3,7 @@ package jkind.writers;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import jkind.lustre.Expr;
 import jkind.results.Counterexample;
 import jkind.util.Tuple;

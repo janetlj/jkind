@@ -261,6 +261,19 @@ public class Util {
 		return Collections.unmodifiableSet(set);
 	}
 
+	public static Set<List<String>> safeStringSortedSets(Set<List<String>> original) {
+		Set<List<String>> set = new HashSet<>(new TreeSet<>(new StringNaturalOrdering()));
+		for (Collection<String> currentSetOriginal : original) {
+			TreeSet<String> individualSet = new TreeSet<>(new StringNaturalOrdering());
+			individualSet.addAll(currentSetOriginal);
+			// List<String> curList = new ArrayList<String>(individualSet);
+			set.add(safeList(individualSet));
+			// set.add(individualSet);
+		}
+
+		return Collections.unmodifiableSet(set);
+	}
+
 	public static List<EnumType> getEnumTypes(List<TypeDef> types) {
 		List<EnumType> enums = new ArrayList<>();
 		for (TypeDef def : types) {
