@@ -14,6 +14,7 @@ import jkind.lustre.CastExpr;
 import jkind.lustre.CondactExpr;
 import jkind.lustre.Equation;
 import jkind.lustre.Expr;
+import jkind.lustre.FunctionCallExpr;
 import jkind.lustre.IdExpr;
 import jkind.lustre.IfThenElseExpr;
 import jkind.lustre.IntExpr;
@@ -63,7 +64,7 @@ public class Lustre2Sexp implements ExprVisitor<Sexp> {
 			Sexp body = eq.expr.accept(visitor);
 			Sexp head = eq.lhs.get(0).accept(visitor);
 			Sexp sexp = new Cons("=", head, body);
-			
+
 			String id = eq.lhs.get(0).id;
 			if (ivcMap.containsKey(id)) {
 				sexp = new Cons("=>", ivcMap.get(id), sexp);
@@ -90,7 +91,7 @@ public class Lustre2Sexp implements ExprVisitor<Sexp> {
 		}
 		return ivcMap;
 	}
-	
+
 	private Symbol curr(String id) {
 		return new StreamIndex(id, index).getEncoded();
 	}
@@ -136,6 +137,19 @@ public class Lustre2Sexp implements ExprVisitor<Sexp> {
 	@Override
 	public Sexp visit(ArrayUpdateExpr e) {
 		throw new IllegalArgumentException("Arrays must be flattened before translation to sexp");
+	}
+
+	@Override
+	public Sexp visit(FunctionCallExpr e) {
+		if (e.args.isEmpty()) {
+			return new Symbol(SexpUtil.encodeFunction(e.function));
+		}
+
+		List<Sexp> args = new ArrayList<>();
+		for (Expr expr : e.args) {
+			args.add(expr.accept(this));
+		}
+		return new Cons(SexpUtil.encodeFunction(e.function), args);
 	}
 
 	@Override

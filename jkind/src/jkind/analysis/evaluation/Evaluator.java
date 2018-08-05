@@ -14,6 +14,7 @@ import jkind.lustre.BoolExpr;
 import jkind.lustre.CastExpr;
 import jkind.lustre.CondactExpr;
 import jkind.lustre.Expr;
+import jkind.lustre.FunctionCallExpr;
 import jkind.lustre.IfThenElseExpr;
 import jkind.lustre.IntExpr;
 import jkind.lustre.NodeCallExpr;
@@ -123,6 +124,11 @@ public abstract class Evaluator implements ExprVisitor<Value> {
 
 	@Override
 	public Value visit(NodeCallExpr e) {
+		return null;
+	}
+
+	@Override
+	public Value visit(FunctionCallExpr e) {
 		return null;
 	}
 

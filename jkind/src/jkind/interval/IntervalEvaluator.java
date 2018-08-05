@@ -8,6 +8,7 @@ import jkind.lustre.BinaryOp;
 import jkind.lustre.BoolExpr;
 import jkind.lustre.CastExpr;
 import jkind.lustre.CondactExpr;
+import jkind.lustre.FunctionCallExpr;
 import jkind.lustre.IdExpr;
 import jkind.lustre.IfThenElseExpr;
 import jkind.lustre.IntExpr;
@@ -118,6 +119,11 @@ public class IntervalEvaluator implements ExprVisitor<Interval> {
 	}
 
 	@Override
+	public Interval visit(FunctionCallExpr e) {
+		throw new IllegalArgumentException();
+	}
+
+	@Override
 	public Interval visit(RealExpr e) {
 		RealEndpoint v = new RealEndpoint(BigFraction.valueOf(e.value));
 		return new NumericInterval(v, v);
@@ -132,7 +138,7 @@ public class IntervalEvaluator implements ExprVisitor<Interval> {
 	public Interval visit(RecordExpr e) {
 		throw new IllegalArgumentException();
 	}
-	
+
 	@Override
 	public Interval visit(RecordUpdateExpr e) {
 		throw new IllegalArgumentException();
@@ -142,7 +148,7 @@ public class IntervalEvaluator implements ExprVisitor<Interval> {
 	public Interval visit(TupleExpr e) {
 		throw new IllegalArgumentException();
 	}
-	
+
 	@Override
 	public Interval visit(UnaryExpr e) {
 		if (e.op == UnaryOp.PRE) {

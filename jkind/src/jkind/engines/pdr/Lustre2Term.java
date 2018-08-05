@@ -3,6 +3,8 @@ package jkind.engines.pdr;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.uni_freiburg.informatik.ultimate.logic.Script;
+import de.uni_freiburg.informatik.ultimate.logic.Term;
 import jkind.lustre.ArrayAccessExpr;
 import jkind.lustre.ArrayExpr;
 import jkind.lustre.ArrayUpdateExpr;
@@ -13,6 +15,7 @@ import jkind.lustre.CondactExpr;
 import jkind.lustre.EnumType;
 import jkind.lustre.Equation;
 import jkind.lustre.Expr;
+import jkind.lustre.FunctionCallExpr;
 import jkind.lustre.IdExpr;
 import jkind.lustre.IfThenElseExpr;
 import jkind.lustre.IntExpr;
@@ -31,12 +34,10 @@ import jkind.lustre.VarDecl;
 import jkind.lustre.visitors.ExprVisitor;
 import jkind.solvers.smtinterpol.ScriptUser;
 import jkind.util.Util;
-import de.uni_freiburg.informatik.ultimate.logic.Script;
-import de.uni_freiburg.informatik.ultimate.logic.Term;
 
 public class Lustre2Term extends ScriptUser implements ExprVisitor<Term> {
 	private static final String INIT = "%init";
-	
+
 	private final Node node;
 	private boolean pre = false;
 
@@ -191,6 +192,11 @@ public class Lustre2Term extends ScriptUser implements ExprVisitor<Term> {
 	@Override
 	public Term visit(NodeCallExpr e) {
 		throw new IllegalArgumentException("Node calls must be inlined before translation to Term");
+	}
+
+	@Override
+	public Term visit(FunctionCallExpr e) {
+		throw new IllegalArgumentException("Function calls must be inlined before translation to Term");
 	}
 
 	@Override
