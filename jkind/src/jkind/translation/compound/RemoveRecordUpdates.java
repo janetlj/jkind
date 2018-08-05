@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jkind.lustre.Expr;
-import jkind.lustre.Node;
+import jkind.lustre.Program;
 import jkind.lustre.RecordAccessExpr;
 import jkind.lustre.RecordExpr;
 import jkind.lustre.RecordType;
@@ -13,25 +13,25 @@ import jkind.lustre.visitors.TypeAwareAstMapVisitor;
 
 /**
  * Removes all record updates via expansion to full record expressions.
- * 
+ *
  * <code>
- * 	type record_type = struct { a : int; b : int; c : bool }; 
+ * 	type record_type = struct { a : int; b : int; c : bool };
  * 	expr1 {a := expr2}
- * 
- * 		===> 
- * 
+ *
+ * 		===>
+ *
  * 	record_type {a = expr2; b = expr1.b; c = expr1.c};
  * </code>
- * 
+ *
  * Assumptions: Nodes are already inlined.
- * 
+ *
  * Guarantees: All record update expressions are removed
  */
 public class RemoveRecordUpdates extends TypeAwareAstMapVisitor {
-	public static Node node(Node node) {
-		return new RemoveRecordUpdates().visit(node);
+	public static Program program(Program program) {
+		return new RemoveRecordUpdates().visit(program);
 	}
-	
+
 	@Override
 	public Expr visit(RecordUpdateExpr e) {
 		Expr record = e.record.accept(this);

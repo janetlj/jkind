@@ -13,6 +13,7 @@ import jkind.lustre.Equation;
 import jkind.lustre.Expr;
 import jkind.lustre.IdExpr;
 import jkind.lustre.Node;
+import jkind.lustre.Program;
 import jkind.lustre.RecordAccessExpr;
 import jkind.lustre.RecordExpr;
 import jkind.lustre.RecordType;
@@ -25,14 +26,14 @@ import jkind.util.Util;
 
 /**
  * Flatten array and record variables to scalars variables
- * 
+ *
  * Assumption: All node calls have been inlined.
- * 
+ *
  * Assumption: All array indices are integer literals
  */
 public class FlattenCompoundVariables extends AstMapVisitor {
-	public static Node node(Node node) {
-		return new FlattenCompoundVariables().visit(node);
+	public static Program program(Program program) {
+		return new FlattenCompoundVariables().visit(program);
 	}
 
 	private final Map<String, Type> originalTypes = new HashMap<>();
