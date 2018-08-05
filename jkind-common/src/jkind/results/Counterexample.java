@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import jkind.excel.ExcelCounterexampleFormatter;
 import jkind.lustre.values.BooleanValue;
@@ -16,6 +18,7 @@ import jkind.lustre.values.Value;
 import jkind.results.layout.Layout;
 import jkind.results.layout.SingletonLayout;
 import jkind.util.CounterexampleFormatter;
+import jkind.util.Util;
 
 /**
  * A JKind counterexample
@@ -23,6 +26,7 @@ import jkind.util.CounterexampleFormatter;
 public final class Counterexample {
 	private final int length;
 	private final Map<String, Signal<Value>> signals = new HashMap<>();
+	private final SortedSet<FunctionTable> functionTables = new TreeSet<>();
 
 	public Counterexample(int length) {
 		this.length = length;
@@ -37,6 +41,14 @@ public final class Counterexample {
 
 	public void addSignal(Signal<Value> signal) {
 		signals.put(signal.getName(), signal);
+	}
+
+	public void addFunctionTable(FunctionTable functionTable) {
+		this.functionTables.add(functionTable);
+	}
+
+	public List<FunctionTable> getFunctionTables() {
+		return Util.safeList(functionTables);
 	}
 
 	/**
@@ -64,7 +76,7 @@ public final class Counterexample {
 
 	/**
 	 * Get a specific signal from the counterexample
-	 * 
+	 *
 	 * @param name
 	 *            Name of the signal to retrieve
 	 * @return Signal with the specified name, or <code>null</code> if it cannot
@@ -83,7 +95,7 @@ public final class Counterexample {
 
 	/**
 	 * Get a specific step of the counterexample
-	 * 
+	 *
 	 * @param step
 	 *            Step to retrieve
 	 * @return Map from signal names to their values on the specified step
@@ -101,7 +113,7 @@ public final class Counterexample {
 
 	/**
 	 * Get a specific integer signal from the counterexample
-	 * 
+	 *
 	 * @param name
 	 *            Name of the signal to retrieve
 	 * @return Integer signal with the specified name, or <code>null</code> if
@@ -113,7 +125,7 @@ public final class Counterexample {
 
 	/**
 	 * Get a specific boolean signal from the counterexample
-	 * 
+	 *
 	 * @param name
 	 *            Name of the signal to retrieve
 	 * @return Boolean signal with the specified name, or <code>null</code> if
@@ -125,7 +137,7 @@ public final class Counterexample {
 
 	/**
 	 * Get a specific enumerated value signal from the counterexample
-	 * 
+	 *
 	 * @param name
 	 *            Name of the signal to retrieve
 	 * @return Enumerated value signal with the specified name, or
@@ -137,7 +149,7 @@ public final class Counterexample {
 
 	/**
 	 * Get a specific real signal from the counterexample
-	 * 
+	 *
 	 * @param name
 	 *            Name of the signal to retrieve
 	 * @return Real signal with the specified name, or <code>null</code> if it
@@ -157,9 +169,9 @@ public final class Counterexample {
 
 	/**
 	 * Convert counterexample to an Excel spreadsheet
-	 * 
+	 *
 	 * Using this requires the jxl.jar file in your classpath
-	 * 
+	 *
 	 * @param file
 	 *            File to write Excel spreadsheet to
 	 * @param layout
@@ -175,9 +187,9 @@ public final class Counterexample {
 
 	/**
 	 * Convert counterexample to an Excel spreadsheet using default layout
-	 * 
+	 *
 	 * Using this requires the jxl.jar file in your classpath
-	 * 
+	 *
 	 * @param file
 	 *            File to write Excel spreadsheet to
 	 * @throws jkind.JKindException
