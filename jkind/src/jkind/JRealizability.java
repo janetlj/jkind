@@ -1,37 +1,30 @@
 package jkind;
 
-import jkind.analysis.LinearChecker;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import jkind.analysis.StaticAnalyzer;
-import jkind.engines.Director;
-import jkind.engines.SolverUtil;
 import jkind.lustre.Node;
 import jkind.lustre.Program;
-import jkind.lustre.builders.ProgramBuilder;
-import jkind.translation.InlineSimpleEquations;
+import jkind.realizability.engines.RealizabilityDirector;
 import jkind.translation.Specification;
 import jkind.translation.Translate;
+import jkind.util.Util;
 
-public class JKind {
+public class JRealizability {
 	public static void main(String[] args) {
 		try {
-			JKindSettings settings = JKindArgumentParser.parse(args);
-			Program program = Main.parseLustre(settings.filename);
-			program = setMainNode(program, settings.main);
+			JRealizabilitySettings settings = JRealizabilityArgumentParser.parse(args);
+			String filename = settings.filename;
+			Program program = Main.parseLustre(filename);
 
-			StaticAnalyzer.check(program, settings.solver);
-			if (!LinearChecker.isLinear(program)) {
-				if (settings.pdrMax > 0) {
-					StdErr.warning("PDR not available for some properties due to non-linearities");
-				}
-			}
-
-			ensureSolverAvailable(settings.solver);
+			StaticAnalyzer.check(program, SolverOption.Z3);
+			realizabilitySpecificChecks(program);
 
 			program = Translate.translate(program);
-			Specification userSpec = new Specification(program, settings.slicing);
-			Specification analysisSpec = getAnalysisSpec(userSpec, settings);
-
-			int exitCode = new Director(settings, userSpec, analysisSpec).run();
+			Specification spec = new Specification(program);
+			int exitCode = new RealizabilityDirector(settings, spec).run();
 			System.exit(exitCode); // Kills all threads
 		} catch (Throwable t) {
 			t.printStackTrace();
@@ -39,34 +32,59 @@ public class JKind {
 		}
 	}
 
-	private static Program setMainNode(Program program, String main) {
-		if (main == null) {
-			return program;
-		}
+	private static void realizabilitySpecificChecks(Program program) {
+		Node main = program.getMainNode();
 
-		boolean hasMainNode = program.nodes.stream().anyMatch(n -> n.id.equals(main));
-		if (!hasMainNode) {
-			StdErr.fatal(ExitCodes.INVALID_OPTIONS, "Unable to find main node '" + main + "'");
-		}
+		boolean valid = true;
+		valid = valid && checkNoFunctions(program);
+		valid = valid && realizablitityQueryExists(main);
+		valid = valid && realizablitityInputsNodeInputs(main);
+		valid = valid && realizablitityInputsUnique(main);
 
-		return new ProgramBuilder(program).setMain(main).build();
-	}
-
-	private static void ensureSolverAvailable(SolverOption solver) {
-		try {
-			SolverUtil.getBasicSolver(solver);
-		} catch (JKindException e) {
-			StdErr.fatal(ExitCodes.INVALID_OPTIONS, e.getMessage());
+		if (!valid) {
+			System.exit(ExitCodes.STATIC_ANALYSIS_ERROR);
 		}
 	}
 
-	private static Specification getAnalysisSpec(Specification userSpec, JKindSettings settings) {
-		if (settings.inlining) {
-			Node inlined = InlineSimpleEquations.node(userSpec.node);
-			Program program = new ProgramBuilder().addFunctions(userSpec.functions).addNode(inlined).build();
-			return new Specification(program, settings.slicing);
+	private static boolean checkNoFunctions(Program program) {
+		if (!program.functions.isEmpty()) {
+			StdErr.error("functions are not supported in JRealizability");
+			return false;
 		} else {
-			return userSpec;
+			return true;
 		}
+	}
+
+	private static boolean realizablitityQueryExists(Node main) {
+		if (main.realizabilityInputs == null) {
+			StdErr.error("main node '" + main.id + "' must have realizability query");
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	private static boolean realizablitityInputsNodeInputs(Node main) {
+		boolean pass = true;
+		List<String> inputs = Util.getIds(main.inputs);
+		for (String ri : main.realizabilityInputs) {
+			if (!inputs.contains(ri)) {
+				StdErr.error("in node '" + main.id + "' realizability input '" + ri + "' must be a node input");
+				pass = false;
+			}
+		}
+		return pass;
+	}
+
+	private static boolean realizablitityInputsUnique(Node main) {
+		boolean unique = true;
+		Set<String> seen = new HashSet<>();
+		for (String ri : main.realizabilityInputs) {
+			if (!seen.add(ri)) {
+				StdErr.error("in node '" + main.id + "' realizability input '" + ri + "' listed multiple times");
+				unique = false;
+			}
+		}
+		return unique;
 	}
 }

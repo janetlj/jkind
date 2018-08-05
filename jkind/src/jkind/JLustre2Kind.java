@@ -27,13 +27,13 @@ public class JLustre2Kind {
 
 			Program program = Main.parseLustre(filename);
 			StaticAnalyzer.check(program, SolverOption.Z3);
-
-			Node main = Translate.translate(program);
+			program = Translate.translate(program);
+			Node main = program.getMainNode();
 			main = RemoveEnumTypes.node(main);
 			DependencyMap dependencyMap = new DependencyMap(main, main.properties);
-			
+
 			main = LustreSlicer.slice(main, dependencyMap);
-		
+
 			if (settings.encode) {
 				main = new KindEncodeIdsVisitor().visit(main);
 			}

@@ -23,7 +23,8 @@ public class JLustre2Excel {
 			StaticAnalyzer.check(program, SolverOption.Z3);
 			ensureUniqueEnumValues(program);
 
-			Node main = Translate.translate(program);
+			program = Translate.translate(program);
+			Node main = program.getMainNode();
 			String outFilename = filename + ".xls";
 			new Node2Excel().convert(main, outFilename);
 			System.out.println("Wrote " + outFilename);
