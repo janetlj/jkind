@@ -3,10 +3,10 @@ package jkind.api.results;
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Function;
 
 import jkind.JKindException;
@@ -201,7 +201,7 @@ public abstract class Renaming {
 	}
 
 	private Set<List<String>> rename(Function<String, String> f, Set<List<String>> es) {
-		Set<List<String>> set = new TreeSet<List<String>>();
+		Set<List<String>> set = new HashSet<List<String>>();
 		for(List<String> curOrigList: es) {
 			List<String> renamedList = curOrigList.stream().map(f).filter(e -> e != null).collect(toList());
 			set.add(renamedList);
