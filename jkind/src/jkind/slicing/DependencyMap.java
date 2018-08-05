@@ -20,11 +20,11 @@ import jkind.util.Util;
 public class DependencyMap {
 	private Map<Dependency, DependencySet> map = new HashMap<>();
 
-	public DependencyMap(Node node, List<String> roots) {
-		computeOneStepDependencies(node);
-		analyzeAssertions(node.assertions);
-		closeDependencies(roots);
-	}
+//	public DependencyMap(Node node, List<String> roots) {
+//		computeOneStepDependencies(node);
+//		analyzeAssertions(node.assertions);
+//		closeDependencies(roots);
+//	}
 
 	public DependencyMap(Node node, List<String> roots, List<Function> functions) {
 		computeOneStepDependencies(node, functions);
@@ -32,18 +32,18 @@ public class DependencyMap {
 		closeDependencies(roots);
 	}
 
-	private void computeOneStepDependencies(Node node) {
-		for (VarDecl input : node.inputs) {
-			map.put(Dependency.variable(input.id), new DependencySet());
-		}
-
-		for (Equation eq : node.equations) {
-			DependencySet deps = DependencyVisitor.get(eq.expr);
-			for (IdExpr idExpr : eq.lhs) {
-				map.put(Dependency.variable(idExpr.id), deps);
-			}
-		}
-	}
+//	private void computeOneStepDependencies(Node node) {
+//		for (VarDecl input : node.inputs) {
+//			map.put(Dependency.variable(input.id), new DependencySet());
+//		}
+//
+//		for (Equation eq : node.equations) {
+//			DependencySet deps = DependencyVisitor.get(eq.expr);
+//			for (IdExpr idExpr : eq.lhs) {
+//				map.put(Dependency.variable(idExpr.id), deps);
+//			}
+//		}
+//	}
 
 	private void computeOneStepDependencies(Node node, List<Function> functions) {
 		for (VarDecl input : node.inputs) {

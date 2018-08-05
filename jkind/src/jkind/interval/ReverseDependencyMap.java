@@ -29,6 +29,8 @@ public class ReverseDependencyMap {
 					map.put(dep, set);
 				}
 				for (IdExpr idExpr : eq.lhs) {
+					System.out.println("ReverseDependencyMap.java line 32");
+					System.out.println(idExpr.id);
 					set.add(Dependency.variable(idExpr.id));
 				}
 			}

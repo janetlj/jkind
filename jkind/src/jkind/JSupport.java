@@ -45,10 +45,11 @@ public class JSupport {
 
 
 			program = Translate.translate(program);
+			program = RemoveEnumTypes.program(program);
+
 			Node main = program.getMainNode();
-			main = RemoveEnumTypes.node(main);
-			DependencyMap dependencyMap = new DependencyMap(main, main.properties);
-			main = LustreSlicer.slice(main, dependencyMap);
+			main = LustreSlicer.slice(main, new DependencyMap(main, main.properties, program.functions));
+
 			main = new NodeBuilder(main).clearIvc().build();
 
 			if (main.properties.size() != 1) {
