@@ -1,8 +1,10 @@
 package jkind.excel;
 
 import jkind.JKindException;
-import jxl.format.CellFormat;
 import jxl.CellView;
+import jxl.format.Border;
+import jxl.format.BorderLineStyle;
+import jxl.format.CellFormat;
 import jxl.format.Colour;
 import jxl.write.WritableCellFormat;
 import jxl.write.WritableFont;
@@ -42,6 +44,26 @@ public class ExcelUtil {
 			throw new JKindException("Error creating highlighting for Excel", e);
 		}
 		return highlightFormat;
+	}
+
+	public static CellFormat addBottomBorder(CellFormat cf) {
+		WritableCellFormat format = new WritableCellFormat(cf);
+		try {
+			format.setBorder(Border.BOTTOM, BorderLineStyle.THIN);
+		} catch (WriteException e) {
+			throw new JKindException("Error creating border format for Excel", e);
+		}
+		return format;
+	}
+
+	public static CellFormat addLeftBorder(CellFormat cf) {
+		WritableCellFormat format = new WritableCellFormat(cf);
+		try {
+			format.setBorder(Border.LEFT, BorderLineStyle.THIN);
+		} catch (WriteException e) {
+			throw new JKindException("Error creating border format for Excel", e);
+		}
+		return format;
 	}
 
 	public static void autosize(WritableSheet sheet, int max) {

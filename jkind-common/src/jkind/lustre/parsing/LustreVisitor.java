@@ -119,6 +119,14 @@ public interface LustreVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitArrayAccessExpr(@NotNull LustreParser.ArrayAccessExprContext ctx);
+	
+	/**
+	 * Visit a parse tree produced by {@link LustreParser#function}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFunction(@NotNull LustreParser.FunctionContext ctx);
+
 	/**
 	 * Visit a parse tree produced by {@link LustreParser#ivc}.
 	 * @param ctx the parse tree
@@ -151,6 +159,15 @@ public interface LustreVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAssertion(@NotNull LustreParser.AssertionContext ctx);
+	
+	/**
+	 * Visit a parse tree produced by the {@code callExpr}
+	 * labeled alternative in {@link LustreParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCallExpr(@NotNull LustreParser.CallExprContext ctx);
+
 	/**
 	 * Visit a parse tree produced by the {@code recordExpr}
 	 * labeled alternative in {@link LustreParser#expr}.
@@ -225,13 +242,6 @@ public interface LustreVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitTypedef(@NotNull LustreParser.TypedefContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code nodeCallExpr}
-	 * labeled alternative in {@link LustreParser#expr}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitNodeCallExpr(@NotNull LustreParser.NodeCallExprContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code recordAccessExpr}
 	 * labeled alternative in {@link LustreParser#expr}.
