@@ -6,21 +6,10 @@ import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
-import jkind.api.JKindApi;
-import jkind.api.results.AnalysisResult;
-import jkind.api.results.CompositeAnalysisResult;
-import jkind.api.results.JKindResult;
-import jkind.api.results.PropertyResult;
-import jkind.api.results.Renaming;
-import jkind.api.results.Status;
-import jkind.api.ui.results.AnalysisResultTree;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -32,6 +21,15 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+
+import jkind.api.JKindApi;
+import jkind.api.results.AnalysisResult;
+import jkind.api.results.CompositeAnalysisResult;
+import jkind.api.results.JKindResult;
+import jkind.api.results.PropertyResult;
+import jkind.api.results.Renaming;
+import jkind.api.results.Status;
+import jkind.api.ui.results.AnalysisResultTree;
 
 /**
  * This example illustrates how to dynamically report the results of multiple
@@ -63,7 +61,7 @@ public class ComplexUiExample {
 	private static Renaming renaming = new Renaming() {
 		@Override
 		public String rename(String original) {
-			return original.replace("_", " ");
+			return original;
 		}
 	};
 
@@ -148,13 +146,24 @@ public class ComplexUiExample {
 					public void run() {
 						while (!queue.isEmpty() && !monitor.isCanceled()) {
 							WorkItem item = queue.remove();
-							new JKindApi().execute(item.file, item.result, monitor);
+							JKindApi api = new JKindApi();
+							// arguments to test the single ivc option in mivc jkind
+							// api.setTimeout(10);
+							// api.setIvcReduction();
+							// arguments to test the all ivc option in mivc jkind
+							api.setAllIvcs();
+							api.setAllIvcsJkindTimeout(500);
+							// test multiple ivc jkind - this is going to replace the single ivc jkind
+							// so no need to test single ivc jkind here
+							api.setJKindJar("D:\\Janet\\usr_apps\\jkind-v4.0.1-mivc-new\\jkindjl\\jkind.jar");
+							api.execute(item.file, item.result, monitor);
 						}
 
 						while (!queue.isEmpty()) {
 							WorkItem item = queue.remove();
 							item.result.cancel();
 						}
+						walkthroughResults(result);
 					}
 				}.start();
 			}
@@ -168,19 +177,27 @@ public class ComplexUiExample {
 			}
 		});
 
-		tree.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				if (event.getSelection() instanceof IStructuredSelection) {
-					IStructuredSelection sel = (IStructuredSelection) event.getSelection();
-					if (!sel.isEmpty() && sel.getFirstElement() instanceof PropertyResult) {
-						BasicUiExample.click(parent, (PropertyResult) sel.getFirstElement());
-					} else if (!sel.isEmpty() && sel.getFirstElement() instanceof JKindResult) {
-						click(parent, (JKindResult) sel.getFirstElement());
-					}
+		tree.getViewer().addSelectionChangedListener(event -> {
+			if (event.getSelection() instanceof IStructuredSelection) {
+				IStructuredSelection sel = (IStructuredSelection) event.getSelection();
+				if (!sel.isEmpty() && sel.getFirstElement() instanceof PropertyResult) {
+					BasicUiExample.click(parent, (PropertyResult) sel.getFirstElement());
+				} else if (!sel.isEmpty() && sel.getFirstElement() instanceof JKindResult) {
+					click(parent, (JKindResult) sel.getFirstElement());
 				}
 			}
 		});
+	}
+
+	private static void walkthroughResults(AnalysisResult result) {
+		System.out.println("entered");
+		// if one layer, the curResult is JKindResult for the current component verified
+		if (result instanceof JKindResult) {
+			System.out.println("jkind result");
+		} else if (result instanceof CompositeAnalysisResult) {
+			System.out.println("composite analysis result");
+
+		}
 	}
 
 	public static void click(Shell parent, JKindResult result) {

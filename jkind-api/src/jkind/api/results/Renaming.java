@@ -2,6 +2,7 @@ package jkind.api.results;
 
 import static java.util.stream.Collectors.toList;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -203,7 +204,18 @@ public abstract class Renaming {
 	private Set<List<String>> rename(Function<String, String> f, Set<List<String>> es) {
 		Set<List<String>> set = new HashSet<List<String>>();
 		for(List<String> curOrigList: es) {
-			List<String> renamedList = curOrigList.stream().map(f).filter(e -> e != null).collect(toList());
+			List<String> updatedOrigList = new ArrayList<String>();
+			for (String curOrigStr : curOrigList) {
+				String updatedName = curOrigStr;
+				if (curOrigStr.contains(".")) {
+					String nodeName = curOrigStr.substring(0, curOrigStr.lastIndexOf('.'));
+					String elemName = curOrigStr.substring(curOrigStr.lastIndexOf('.'), curOrigStr.length());
+					nodeName = nodeName.replaceAll("~([0-9]+)$", "");
+					updatedName = nodeName + elemName;
+				}
+				updatedOrigList.add(updatedName);
+			}
+			List<String> renamedList = updatedOrigList.stream().map(f).filter(e -> e != null).collect(toList());
 			set.add(renamedList);
 		}
 		return set;
