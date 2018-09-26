@@ -54,7 +54,8 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 	private Set<String> mustElements = new HashSet<>();
 	private Set<String> mayElements = new HashSet<>();  
 	Set<Tuple<Set<String>, List<String>>> allIvcs = new HashSet<>();
-	private int TIMEOUT; 
+	private int TIMEOUT;
+	private boolean timedoutLoop = false; 
 
 	public AllIvcsExtractorEngine(Specification spec, JKindSettings settings, Director director) {
 		super(NAME, spec, settings, director); 
@@ -150,7 +151,10 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 		}
 		MiniJKind miniJkind = new MiniJKind (newSpec, js);
 		miniJkind.verify();
-		if(miniJkind.getPropertyStatus().equals(MiniJKind.UNKNOW_WITH_EXCEPTION)){
+		if(miniJkind.getPropertyStatus().equals(MiniJKind.UNKNOWN)){
+			timedoutLoop  = true;
+		}
+		if(miniJkind.getPropertyStatus().equals(MiniJKind.UNKNOWN_WITH_EXCEPTION)){
 			js.pdrMax = 0;
 			return retryVerification(newSpec, property, js, resultOfIvcFinder, mustChckList, deactivate);
 		}
@@ -223,6 +227,9 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 		}
 		MiniJKind miniJkind = new MiniJKind (newSpec, js);
 		miniJkind.verify();
+		if(miniJkind.getPropertyStatus().equals(MiniJKind.UNKNOWN)){
+			timedoutLoop  = true;
+		}
 		if(miniJkind.getPropertyStatus().equals(MiniJKind.VALID)){
 			mayElements.addAll(deactivate);
 			mustChckList.removeAll(deactivate);
@@ -365,7 +372,11 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 	}
 
 	private void sendValid(String valid, ValidMessage vm) {
-		Itinerary itinerary = vm.getNextItinerary();  
+		Itinerary itinerary = vm.getNextItinerary();
+		if(timedoutLoop){
+			mustElements.add("::AIVCtimedoutLoop::");
+		}
+		
 		director.broadcast(new ValidMessage(vm.source, valid, vm.k, vm.proofTime, null, mustElements, itinerary, allIvcs)); 
 	}
 	
