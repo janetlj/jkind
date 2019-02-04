@@ -12,7 +12,8 @@ import java.util.Set;
 
 import jkind.engines.messages.UnknownMessage;
 import jkind.engines.messages.ValidMessage; 
-import jkind.lustre.Node;  
+import jkind.lustre.Node;
+import jkind.lustre.Program;
 import jkind.results.Counterexample;
 import jkind.translation.Specification;  
 
@@ -20,7 +21,7 @@ public class MiniJKind extends Engine {
 	public static final String NAME = "mini-jkind";
     private  Director director;  
 	public static final String UNKNOWN = "UNKNOWN";
-	public static final String UNKNOW_WITH_EXCEPTION = "UNKNOW_WITH_EXCEPTION";
+	public static final String UNKNOWN_WITH_EXCEPTION = "UNKNOW_WITH_EXCEPTION";
 	public static final String INVALID = "INVALID";
 	public static final String VALID = "VALID";
 	public static final String NOT_YET_CHECKED = "NOT_YET_CHECKED";
@@ -29,7 +30,7 @@ public class MiniJKind extends Engine {
 	private Counterexample invalidModel; 
 	private double runtime;
 	private String status = NOT_YET_CHECKED; 
-    
+	
 	public MiniJKind(Specification spec, JKindSettings settings) {
 		super(NAME, spec, settings, null); 
 		
@@ -41,19 +42,13 @@ public class MiniJKind extends Engine {
 				settings.xml = false;
 				settings.xmlToStdout = false;
 				settings.allIvcs = false;
-				settings.allIvcsAlgorithm = 1;
-				settings.allIvcsMaxGrows = 1000;
-				settings.allIvcsJkindTimeout = -1;
 				settings.excel = false; 
 				settings.miniJkind = true;
- 
+				
 		if (settings.allAssigned && settings.reduceIvc){ 
-			Node newNode = IvcUtil.setIvcArgs(spec.node, IvcUtil.getAllAssigned(spec.node));
-			this.director =  new Director(settings, new Specification(newNode, settings.slicing), 
-										new Specification(newNode, settings.slicing), this);
-		}else if (!settings.allAssigned && settings.reduceIvc){ 
-			this.director =  new Director(settings, new Specification(spec.node, settings.slicing), 
-					new Specification(spec.node, settings.slicing), this); 
+			Program program = IvcUtil.setIvcArgs(spec.node, IvcUtil.getAllAssigned(spec.node));
+			this.director =  new Director(settings, new Specification(program, settings.slicing), 
+										new Specification(program, settings.slicing), this);
 		}else{
 			this.director =  new Director(settings, spec, spec, this);
 		}
@@ -67,7 +62,7 @@ public class MiniJKind extends Engine {
 			
 			if(ret == ExitCodes.IVC_EXCEPTION)
 			{ 
-				status = UNKNOW_WITH_EXCEPTION;
+				status = UNKNOWN_WITH_EXCEPTION;
 			} 
 		} 
 		catch (Throwable t) {  

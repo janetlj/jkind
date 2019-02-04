@@ -30,7 +30,8 @@ import jkind.engines.messages.ValidMessage;
 import jkind.lustre.Expr;
 import jkind.lustre.NamedType;
 import jkind.lustre.Node;
-import jkind.lustre.VarDecl;
+import jkind.lustre.Program;
+import jkind.lustre.VarDecl; 
 import jkind.sexp.Cons;
 import jkind.sexp.Sexp;
 import jkind.sexp.Symbol;
@@ -59,18 +60,8 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 	private Set<String> mustElements = new HashSet<>();
 	private Set<String> mayElements = new HashSet<>();  
 	Set<Tuple<Set<String>, List<String>>> allIvcs = new HashSet<>();
-	private int TIMEOUT; 
-	private int numOfGetIvcCalls = 1;
-	private int numOfTimedOuts = 0;
-	private ValidMessage gvm;
-	// these variables are only used for the experiments
-		private double runtime;  
-		private int runId = 0;
-		private int shrinks = 0;
-		private int satChecks = 0;
-		private int unsatChecks = 0;	
-		private int mivcs = 0;		
-	//--------------------------------------------------
+	private int TIMEOUT;
+	private boolean timedoutLoop = false; 
 
 	public AllIvcsExtractorEngine(Specification spec, JKindSettings settings, Director director) {
 		super(NAME, spec, settings, director); 
@@ -98,14 +89,6 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 	}
 	
 	private void reduce(ValidMessage vm) { 
-		
-		//----- for the experiments---------
-				runtime = System.currentTimeMillis(); 
-				// dummy
-				gvm = vm;
-				//
-		//-----------------------------------
-				
 		for (String property : vm.valid) {
 			mayElements.clear();
 			mustElements.clear(); 
@@ -197,14 +180,7 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 				mapShrink(ivc, property.toString());
 			}						
 		}
-		
-		z3Solver.pop(); 
-		
-		//--------- for the experiments --------------
-				//runtime = (System.currentTimeMillis() - runtime) / 1000.0;
-				//recordRuntime(false);
-		//--------------------------------------------
-				
+		z3Solver.pop(); 				
 		sendValid(property.toString(), vm);
 	}
 			
@@ -227,20 +203,16 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 		deactivate.removeAll(wantedElem);
 		
 		Node nodeSpec = IvcUtil.unassign(spec.node, deactivate, property);  
-		Specification newSpec = new Specification(nodeSpec, js.slicing);  
-		
+		Specification newSpec = new Specification(new Program(nodeSpec), js.slicing);   
 		if (settings.scratch){
 			comment("Sending a request for a new IVC while deactivating "+ IvcUtil.getIvcLiterals(ivcMap, deactivate));
 		}
 		MiniJKind miniJkind = new MiniJKind (newSpec, js);
 		miniJkind.verify();
-		runId++;
-		
-		//--------- for the experiments --------------
-        	//writeToXmlAllIvcRuns(miniJkind.getPropertyStatus(), miniJkind.getRuntime()); 
-        //--------------------------------------------
-        
-        if(miniJkind.getPropertyStatus().equals(MiniJKind.UNKNOW_WITH_EXCEPTION)){
+		if(miniJkind.getPropertyStatus().equals(MiniJKind.UNKNOWN)){
+			timedoutLoop  = true;
+		}
+		if(miniJkind.getPropertyStatus().equals(MiniJKind.UNKNOWN_WITH_EXCEPTION)){
 			js.pdrMax = 0;
 			return retryVerification(newSpec, property, js, resultOfIvcFinder, mustChckList, deactivate);
 		}
@@ -560,6 +532,9 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 		}
 		MiniJKind miniJkind = new MiniJKind (newSpec, js);
 		miniJkind.verify();
+		if(miniJkind.getPropertyStatus().equals(MiniJKind.UNKNOWN)){
+			timedoutLoop  = true;
+		}
 		if(miniJkind.getPropertyStatus().equals(MiniJKind.VALID)){
 			mayElements.addAll(deactivate);
 			mustChckList.removeAll(deactivate);
@@ -751,7 +726,11 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 	}
 
 	private void sendValid(String valid, ValidMessage vm) {
-		Itinerary itinerary = vm.getNextItinerary();  
+		Itinerary itinerary = vm.getNextItinerary();
+		if(timedoutLoop){
+			mustElements.add("::AIVCtimedoutLoop::");
+		}
+		
 		director.broadcast(new ValidMessage(vm.source, valid, vm.k, vm.proofTime, null, mustElements, itinerary, allIvcs)); 
 	}
 	
@@ -792,94 +771,5 @@ public class AllIvcsExtractorEngine extends SolverBasedEngine {
 		}
 	}
 	
-	// this method is used only in our experiments
-		private void recordRuntime(boolean timedout) {
-			String xmlFilename = settings.filename + "_alg" + settings.allIvcsAlgorithm + "_runtimeAllIvcs.xml";
-			try (PrintWriter out = new PrintWriter(new FileOutputStream(xmlFilename))) {
-				out.println("<?xml version=\"1.0\"?>");
-				out.println("<Results xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"); 
-				out.println("  <AllIvcRuntime unit=\"sec\">" + runtime + "</AllIvcRuntime>");
-				out.println("  <NumOfGetIvcCalls>" + numOfGetIvcCalls + "</NumOfGetIvcCalls>");
-				out.println("  <NumOfTimedOuts>" + numOfTimedOuts + "</NumOfTimedOuts>");
-				out.println("  <Timedout>" + timedout + "</Timedout>");
-				out.println("</Results>");
-				out.flush();
-				out.close();
-			} catch (Throwable t) {
-				t.printStackTrace();
-				System.exit(ExitCodes.UNCAUGHT_EXCEPTION);
-			}
-			
-	}
-		
-		//recording (minimal) IVCs found during the computation
-		private void writeToXmlAllIvcs(Set<String> trimmed, Set<String> untrimmed, double d, boolean isNew) {
-	 		String xmlFilename = settings.filename + "_alg" + settings.allIvcsAlgorithm + "_all_uc_minijkind.xml";  
- 
-			try (PrintWriter out = new PrintWriter(new FileOutputStream(new File(xmlFilename), true))) { 
-				out.println("<Timeouts>" + numOfTimedOuts + "</Timeouts>");
-				out.println("<Results>");
-				out.println("   <RunID>" + runId + "</RunID>"); 
-				out.println("   <NewSet>" + isNew + "</NewSet>"); 
-				out.println("   <Time unit=\"sec\">" + d + "</Time>");
-				out.println("   <SatChecks>" + satChecks + "</SatChecks>");
-				out.println("   <UnsatChecks>" + unsatChecks + "</UnsatChecks>");
-				out.println("   <ID>" + mivcs + "</ID>");					
-				for (String s : untrimmed) {
-					out.println("   <IVC>" + s + "</IVC>");
-				}
-				for (String s : trimmed) {
-					out.println("   <TRIVC>" + s + "</TRIVC>");
-				}
-				out.println("</Results>");
-				out.flush(); 
-				out.close(); 
-			} catch (Throwable t) { 
-				t.printStackTrace();
-				System.exit(ExitCodes.UNCAUGHT_EXCEPTION);
-			}
-			
-		}	
 
-		// recording intermediate results for the experiments
-		private void writeToXmlAllShrinks(int initial_size, int final_size, int sat_checks, int unsat_checks, double shrink_runtime) {
-	 		String xmlFilename = settings.filename + "_alg" + settings.allIvcsAlgorithm + "_all_shrinks.xml";  
- 
-			try (PrintWriter out = new PrintWriter(new FileOutputStream(new File(xmlFilename), true))) { 
-				out.println("<Result>");
-				out.println("   <ShrinkID>" + shrinks + "</ShrinkID>"); 				
-				out.println("   <InitialSize>" + initial_size + "</InitialSize>"); 
-				out.println("   <FinalSize>" + final_size + "</FinalSize>");
-				out.println("   <SatChecks>" + sat_checks + "</SatChecks>");
-				out.println("   <UnsatChecks>" + unsat_checks + "</UnsatChecks>");				
-				out.println("   <Runtime unit=\"sec\">" + shrink_runtime + "</Runtime>");
-				out.println("</Result>");
-				out.flush(); 
-				out.close(); 
-			} catch (Throwable t) { 
-				t.printStackTrace();
-				System.exit(ExitCodes.UNCAUGHT_EXCEPTION);
-			}
-			
-		}
-		
-		// recording intermediate results for the experiments	 
-		private void writeToXmlAllIvcRuns(String res, double d) { 
-			String xmlFilename = settings.filename + "_alg" + settings.allIvcsAlgorithm + "_allivcs_inter_loop_runs.xml";  
- 
-			try (PrintWriter out = new PrintWriter(new FileOutputStream(new File(xmlFilename), true))) { 
-				out.println("<Run>");
-				out.println("   <RunID>" + runId + "</RunID>");  
-				out.println("   <Result>" + res + "</Result>");  
-				out.println("   <Time unit=\"sec\">" + d + "</Time>");  
-				out.println("</Run>");
-				out.flush(); 
-				out.close(); 
-			} catch (Throwable t) { 
-				t.printStackTrace();
-				System.exit(ExitCodes.UNCAUGHT_EXCEPTION);
-			}
-			
-		}
-	
 }

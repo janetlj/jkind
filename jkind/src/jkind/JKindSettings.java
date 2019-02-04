@@ -22,7 +22,6 @@ public class JKindSettings extends Settings {
 	public int allIvcsAlgorithm = 1;
 	public int allIvcsMaxGrows = 1000;
 	public int allIvcsJkindTimeout = -1; // if set to -1, a timeout will be computed based on the first call of the jkind's solve method	
-	public boolean intervalGeneralization = false;
 	public boolean inlining = true;
 	public boolean slicing = true;
 	public SolverOption solver = SolverOption.SMTINTERPOL;
@@ -54,7 +53,6 @@ public class JKindSettings extends Settings {
 		this.allIvcsMaxGrows = settings.allIvcsMaxGrows;
 		this.allIvcsJkindTimeout = settings.allIvcsJkindTimeout;
 		this.smoothCounterexamples = settings.smoothCounterexamples;
-		this.intervalGeneralization = settings.intervalGeneralization;
 		this.inlining = settings.inlining;
 		this.slicing = settings.slicing;
 		this.solver = settings.solver;

@@ -1,6 +1,7 @@
 package jkind.results;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -12,10 +13,10 @@ import jkind.util.Util;
 public final class ValidProperty extends Property {
 	private final String source;
 	private final int k;
-	private final List<String> invariants;
-	private final Set<String> ivc;
-	private final Set<List<String>> ivcSets;
-	private final Set<List<String>> invarantSets;
+	private List<String> invariants;
+	private Set<String> ivc;
+	private Set<List<String>> ivcSets;
+	private Set<List<String>> invarantSets;
 
 	// TODO: update to use only invariantSets and ivcSets and get rid of invariants and ivc
 	public ValidProperty(String name, String source, int k, double runtime, List<String> invariants,
@@ -73,5 +74,10 @@ public final class ValidProperty extends Property {
 
 	public Set<List<String>> getIvcSets() {
 		return ivcSets;
+
+	@Override
+	public void discardDetails() {
+		invariants = Collections.emptyList();
+		ivc = Collections.emptySet();
 	}
 }

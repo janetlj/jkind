@@ -7,11 +7,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-
 import jkind.JKindException;
 import jkind.SolverOption;
 import jkind.api.results.JKindResult;
+
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
  * The primary interface to JKind.
@@ -27,8 +27,7 @@ public class JKindApi extends KindApi {
 	protected boolean ivcReduction = false;
 	protected boolean allIvcs = false;
 	protected boolean smoothCounterexamples = false;
-	protected boolean intervalGeneralization = false;
-	protected Integer allIvcsJkindTimeout = -1;
+	protected boolean slicing = true;
 
 	protected SolverOption solver = null;
 
@@ -39,7 +38,7 @@ public class JKindApi extends KindApi {
 
 	/**
 	 * Set the maximum depth for BMC and k-induction
-	 *
+	 * 
 	 * @param n
 	 *            A non-negative integer
 	 */
@@ -64,7 +63,7 @@ public class JKindApi extends KindApi {
 
 	/**
 	 * Set the maximum number of PDR instances to run
-	 *
+	 * 
 	 * @param pdrMax
 	 *            A non-negative integer
 	 */
@@ -95,19 +94,12 @@ public class JKindApi extends KindApi {
 	public void setIvcReduction() {
 		ivcReduction = true;
 	}
-
+	
 	/**
 	 * Find all inductive validity cores for valid properties
 	 */
 	public void setAllIvcs() {
 		allIvcs = true;
-	}
-
-	/**
-	 * TIme limit for each call of minijkind
-	 */
-	public void setAllIvcsJkindTimeout(int allIvcsJkindTimeoutIn) {
-		allIvcsJkindTimeout = allIvcsJkindTimeoutIn;
 	}
 
 	/**
@@ -118,11 +110,10 @@ public class JKindApi extends KindApi {
 	}
 
 	/**
-	 * Post-process counterexamples using interval analysis to make them more
-	 * general
+	 * Disable slicing of input model and counterexamples
 	 */
-	public void setIntervalGeneralization() {
-		intervalGeneralization = true;
+	public void disableSlicing() {
+		slicing = false;
 	}
 
 	/**
@@ -158,7 +149,7 @@ public class JKindApi extends KindApi {
 
 	/**
 	 * Run JKind on a Lustre program
-	 *
+	 * 
 	 * @param lustreFile
 	 *            File containing Lustre program
 	 * @param result
@@ -207,17 +198,11 @@ public class JKindApi extends KindApi {
 		if (allIvcs) {
 			args.add("-all_ivcs");
 		}
-		if (allIvcsJkindTimeout != -1) {
-			// Important note: need to add args separated by space as two different args
-			// path including space will be surrounded by "" later
-			args.add("-all_ivcs_jkind_timeout");
-			args.add(allIvcsJkindTimeout.toString());
-		}
 		if (smoothCounterexamples) {
 			args.add("-smooth");
 		}
-		if (intervalGeneralization) {
-			args.add("-interval");
+		if (!slicing) {
+			args.add("-no_slicing");
 		}
 		if (solver != null) {
 			args.add("-solver");
@@ -242,15 +227,13 @@ public class JKindApi extends KindApi {
 	}
 
 	protected String[] getJKindCommand() {
-		// TODO: not using -jkind if using mivc_jkind.jar
-		// using -jkind when using jkind.jar (no matter it's built from mivc or single ivc jar)
 		return new String[] { ApiUtil.getJavaPath(), "-jar", getOrFindJKindJar(), "-jkind" };
 	}
 
 	private String getOrFindJKindJar() {
-		if (jkindJar != null) {
-			return jkindJar;
-		} else {
+		if (jkindJar != null) { 
+			return jkindJar; 
+		} else {  
 			return ApiUtil.findJKindJar().toString();
 		}
 	}

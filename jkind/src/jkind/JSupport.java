@@ -44,11 +44,10 @@ public class JSupport {
 				throw new IllegalArgumentException("Non-linear not supported");
 			}
 			
-			
-			Node main = Translate.translate(program);
-			main = RemoveEnumTypes.node(main);
-			DependencyMap dependencyMap = new DependencyMap(main, main.properties);
-			main = LustreSlicer.slice(main, dependencyMap);
+			program = Translate.translate(program);
+			program = RemoveEnumTypes.program(program);
+			Node main = program.getMainNode();
+			main = LustreSlicer.slice(main, new DependencyMap(main, main.properties, program.functions));
 			main = new NodeBuilder(main).clearIvc().build();
 
 			if (main.properties.size() != 1) {
@@ -57,43 +56,9 @@ public class JSupport {
 			}
 			
 			inputIVC = getIVC(settings.useUnsatCore);
-			
-			
-			/* for checking must provability in the experiments
-			Node newnode = IvcUtil.overApproximateWithIvc(main, inputIVC, main.properties.get(0));
-			JKindSettings js = new JKindSettings(); 
-			//js.noSlicing = true;   
-			js.allAssigned = false; 
-			js.timeout = TIMEOUT; 
-			MiniJKind miniJkind = new MiniJKind (new Specification(newnode, js.slicing), js);
-			miniJkind.verify();
-			if  (miniJkind.getPropertyStatus() != MiniJKind.VALID) {
-					String xmlFilename;
-				if  (miniJkind.getPropertyStatus() == MiniJKind.INVALID) {
-				 xmlFilename = settings.filename + "_falied.xml";
-				}else {
-					 xmlFilename = settings.filename + "_unknown.xml";
-				}
-				try (PrintWriter out = new PrintWriter(new FileOutputStream(xmlFilename))) {
-					out.println("<?xml version=\"1.0\"?>");
-					out.println("<Results xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">");
-					out.println("  <Name>" + settings.filename+ "</Name>");
-					out.println("</Results>");
-					out.flush();
-					out.close();
-				} catch (Throwable t) {
-					t.printStackTrace();
-					System.exit(ExitCodes.UNCAUGHT_EXCEPTION);
-				}
-			}
-			System.exit(0);*/
-			
-			MinimalIvcFinder minimalFinder = new MinimalIvcFinder(IvcUtil.overApproximateWithIvc(main, inputIVC, main.properties.get(0)),
-					settings.filename, main.properties.get(0));
-			minimalFinder.minimizeIvc(inputIVC, new HashSet<>(), true, TIMEOUT);
-			//-------------- computing MUST ---------------------
-			//MinimalIvcFinder minimalFinder = new MinimalIvcFinder(main, settings.filename, main.properties.get(0));
-			//minimalFinder.computeMust(inputIVC, true, TIMEOUT);
+			MinimalIvcFinder minimalFinder = new MinimalIvcFinder(new Program(IvcUtil.overApproximateWithIvc(main, inputIVC, main.properties.get(0))),
+					settings.filename);
+			minimalFinder.minimizeIvc(inputIVC, new HashSet<>(), TIMEOUT);
 			System.exit(0);
 		 	
 			}catch (Throwable t) {
