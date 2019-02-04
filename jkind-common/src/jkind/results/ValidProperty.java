@@ -74,7 +74,7 @@ public final class ValidProperty extends Property {
 
 	public Set<List<String>> getIvcSets() {
 		return ivcSets;
-
+	}
 	@Override
 	public void discardDetails() {
 		invariants = Collections.emptyList();

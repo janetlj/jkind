@@ -1,18 +1,9 @@
 package jkind.translation;
 
-<<<<<<< HEAD
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.util.Map;
-
-import jkind.ExitCodes;
-import jkind.engines.ivcs.IvcUtil;
-=======
 import java.util.List;
 import java.util.Map;
 
 import jkind.lustre.Function;
->>>>>>> upstream/master
 import jkind.lustre.Node;
 import jkind.lustre.Program;
 import jkind.lustre.Type;
