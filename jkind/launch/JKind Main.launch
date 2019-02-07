@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/jkind/src/jkind/Main.java"/>
+<listEntry value="/jkind-api/src/jkind/api/examples/CommandLineExample.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
 </listAttribute>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="jkind.Main"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-jkind -all_ivcs -all_assigned -solver z3 -xml  &quot;C:\Users\Elaheh\Desktop\tes.lus&quot;"/>
-<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="jkind"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="jkind.api.examples.CommandLineExample"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-jkind -all_ivcs -all_assigned -solver z3 -xml  &quot;C:\Project_Files\Janet\Test\C0123_w_fault.lus&quot;"/>
+<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="jkind-api"/>
 <stringAttribute key="yk-options" value="&#13;&#10;additional-options2=onexit\=snapshot&#13;&#10;"/>
 </launchConfiguration>

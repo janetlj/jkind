@@ -49,10 +49,10 @@ public class CommandLineExample {
 		// api.setIvcReduction();
 		// arguments to test the all ivc option in mivc jkind
 		api.setAllIvcs();
-		api.setAllIvcsJkindTimeout(100);
+		// api.setAllIvcsJkindTimeout(100);
 		// test multiple ivc jkind - this is going to replace the single ivc jkind
 		// so no need to test single ivc jkind here
-		api.setJKindJar("D:\\Janet\\usr_apps\\jkind-v4.0.1-mivc-new\\jkindjl\\jkind.jar");
+		api.setJKindJar("C:\\Project_Files\\JKind_MIVC_JL\\jkind.jar");
 		api.execute(file, result, monitor);
 
 		/*
